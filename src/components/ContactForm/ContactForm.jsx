@@ -1,76 +1,85 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { ErrorMessage, Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import css from './ContactForm.module.css'
-import { addContact } from "../../redux/contactsOps";
+import css from "./ContactForm.module.css";
 import { useDispatch } from "react-redux";
+import { addContact } from "../../redux/contacts/operations";
 
-
-
-const ContactsSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(3, "Contact name must be at least 2 characters!")
-    .max(50, "Contact name must be less than 50 characters!")
-    .required("Contact name is required!"),
-  number: Yup.string()
-    .min(3, "Contact number must be at least 3 characters!")
-    .max(50, "Contact number must be less than 50 characters!")
-    .matches(
-      /^[0-9-]+$/,
-      "Please type numbers"
-    )
-    .required("Contact number is required!"),
-});
-
-const INITIAL_FORM_DATA = {
+const initialValues = {
   name: "",
   number: "",
 };
 
+// Валідація за допомогою Yup
+const validationSchema = Yup.object({
+  name: Yup.string()
+    .min(2, "Must be at least 2 characters")
+    .max(15, "Must be 15 characters or less")
+    .required("Name is required"),
+  number: Yup.string()
+    .matches(/^\d{3}-\d{3}-\d{2}-\d{2}$/, "Must be in the format xxx-xxx-xx-xx")
+    .required("Phone number is required"),
+});
+
 const ContactForm = () => {
   const dispatch = useDispatch();
-  const handleSubmit = (data, actions) => {
-    dispatch(addContact(data));
+    
+  const handleSubmit = (values, actions) => {
+    dispatch(addContact(values));
     actions.resetForm();
   };
 
+    
+  
+
   return (
     <Formik
-      validationSchema={ContactsSchema}
-      initialValues={INITIAL_FORM_DATA}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
       <Form className={css.form}>
-        <label className={css.formLabel}>
-          <span>Name</span>
-          <Field
-            className={css.formInput}
-            type="text"
-            name="name"
-            placeholder="Enter contact name"
-          />
-          <ErrorMessage className={css.errorMsg} name="name" component="span" />
+        <label className={css.label} htmlFor="name">
+          Name:
         </label>
-        <label className={css.formLabel}>
-          <span>Number</span>
+
+        <div className={css.containerField}>
           <Field
-            className={css.formInput}
+            className={css.input}
             type="text"
-            name="number"
-            placeholder="Enter contact number"
+            id="name"
+            name="name"
+            placeholder="Name"
           />
           <ErrorMessage
-            className={css.errorMsg}
+            className={css.errorSpan}
+            name="name"
+            component="span"
+          />
+        </div>
+
+        <label className={css.label} htmlFor="number">
+          Phone Number:
+        </label>
+
+        <div className={css.containerField}>
+          <Field
+            className={css.input}
+            type="text"
+            id="number"
+            name="number"
+            placeholder="xxx-xxx-xx-xx"
+          />
+          <ErrorMessage
+            className={css.errorSpan}
             name="number"
             component="span"
           />
-        </label>
-        <button className={css.formBtn} type="submit">
-          Add contact
-        </button>
+        </div>
+
+        <button type="submit">Add Contact</button>
       </Form>
     </Formik>
   );
 };
 
 export default ContactForm;
-
